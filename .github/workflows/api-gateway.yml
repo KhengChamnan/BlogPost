@@ -41,9 +41,15 @@ jobs:
       - name: Run tests
         env:
           NODE_ENV: test
+          PORT: 8080
+          AUTH_SERVICE_URL: http://localhost:8000
+          CONTENT_SERVICE_URL: http://localhost:3001
+          COMMENT_SERVICE_URL: http://localhost:4000
+          RATE_LIMIT_WINDOW_MS: 900000
+          RATE_LIMIT_MAX_REQUESTS: 100
         run: |
           cd api-gateway
-          npm test || echo "No tests found"
+          npm test
 
   build:
     name: Build Docker Image

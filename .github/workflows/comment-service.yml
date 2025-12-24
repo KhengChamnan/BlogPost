@@ -58,7 +58,7 @@ jobs:
           NODE_ENV: test
         run: |
           cd comment-service
-          npm test || echo "No tests found"
+          npm test
 
   build:
     name: Build Docker Image
