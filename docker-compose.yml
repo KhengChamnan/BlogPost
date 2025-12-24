@@ -1,4 +1,49 @@
+
 services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - AUTH_SERVICE_URL=http://auth-user-service:8000
+      - CONTENT_SERVICE_URL=http://content-service:3001
+      - COMMENT_SERVICE_URL=http://comment-service:4000
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    depends_on:
+      - auth-user-service
+      - content-service
+      - comment-service
+    networks:
+      - blog-network
+    restart: unless-stopped
+
+  # Auth & User Service (Laravel + MySQL)
+  auth-user-service:
+    build:
+      context: ./auth-user-service
+      dockerfile: dockerfile
+    container_name: auth-user-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=blog_auth
+      - DB_USERNAME=root
+      - DB_PASSWORD=root_password
+    depends_on:
+      - mysql
+    networks:
+      - blog-network
+    restart: unless-stopped
+
   # Content Service (ExpressJS + MongoDB)
   content-service:
     build:
@@ -12,6 +57,38 @@ services:
       - MONGO_URL=mongodb://mongo:27017/blog_content
     depends_on:
       - mongo
+    networks:
+      - blog-network
+    restart: unless-stopped
+
+  # Comment Service (ExpressJS + MongoDB)
+  comment-service:
+    build:
+      context: ./comment-service
+      dockerfile: dockerfile
+    container_name: comment-service
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MONGO_URL=mongodb://mongo:27017/blog_comments
+    depends_on:
+      - mongo
+    networks:
+      - blog-network
+    restart: unless-stopped
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=blog_auth
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - blog-network
     restart: unless-stopped
@@ -33,4 +110,5 @@ networks:
     driver: bridge
 
 volumes:
+  mysql_data:
   mongo_data:
