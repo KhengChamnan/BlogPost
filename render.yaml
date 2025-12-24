@@ -28,6 +28,7 @@ services:
   - type: web
     name: auth-user-service
     env: php
+    rootDir: auth-user-service
     buildCommand: composer install --no-dev --no-scripts --no-autoloader && composer dump-autoload --optimize && php artisan migrate --force
     startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
     envVars:
@@ -59,32 +60,43 @@ services:
   - type: web
     name: content-service
     env: node
+    rootDir: content-service
     buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: PORT
         value: "3001"
       - key: MONGO_URL
-        value: mongodb://mongo-database.onrender.com:27017/blog_content
+        fromService:
+          type: worker
+          name: mongo-database
+          property: host
+        transform: mongodb://${host}:27017/blog_content
     healthCheckPath: /health
 
   # Comment Service (Node.js)
   - type: web
     name: comment-service
     env: node
+    rootDir: comment-service
     buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: PORT
         value: "4000"
       - key: MONGO_URL
-        value: mongodb://mongo-database.onrender.com:27017/blog_comments
+        fromService:
+          type: worker
+          name: mongo-database
+          property: host
+        transform: mongodb://${host}:27017/blog_comments
     healthCheckPath: /health
 
   # API Gateway (Node.js)
   - type: web
     name: api-gateway
     env: node
+    rootDir: api-gateway
     buildCommand: npm install --production
     startCommand: npm start
     envVars:
@@ -95,16 +107,19 @@ services:
           type: web
           name: auth-user-service
           property: host
+        transform: https://${host}
       - key: CONTENT_SERVICE_URL
         fromService:
           type: web
           name: content-service
           property: host
+        transform: https://${host}
       - key: COMMENT_SERVICE_URL
         fromService:
           type: web
           name: comment-service
           property: host
+        transform: https://${host}
       - key: RATE_LIMIT_WINDOW_MS
         value: "900000"
       - key: RATE_LIMIT_MAX_REQUESTS
