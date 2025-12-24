@@ -11,11 +11,21 @@ const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL;
  */
 router.post('/create', authMiddleware, async (req, res, next) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User information not available' });
+    }
+    
+    // Add authorId from authenticated user
+    const requestBody = {
+      ...req.body,
+      authorId: req.user.id.toString()
+    };
+    
     const result = await proxyRequest(
       CONTENT_SERVICE_URL,
       '/api/content/create',
       'POST',
-      req.body,
+      requestBody,
       req.headers
     );
     res.status(200).json(result);
@@ -68,11 +78,17 @@ router.get('/getContent/:id', async (req, res, next) => {
  */
 router.put('/update/:id', authMiddleware, async (req, res, next) => {
   try {
+    // Ensure authorId is included for updates
+    const requestBody = {
+      ...req.body,
+      authorId: req.user.id.toString()
+    };
+    
     const result = await proxyRequest(
       CONTENT_SERVICE_URL,
       `/api/content/update/${req.params.id}`,
       'PUT',
-      req.body,
+      requestBody,
       req.headers
     );
     res.status(200).json(result);

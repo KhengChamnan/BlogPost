@@ -11,11 +11,17 @@ const COMMENT_SERVICE_URL = process.env.COMMENT_SERVICE_URL;
  */
 router.post('/create', authMiddleware, async (req, res, next) => {
   try {
+    // Add userId from authenticated user
+    const requestBody = {
+      ...req.body,
+      userId: req.user.id.toString()
+    };
+    
     const result = await proxyRequest(
       COMMENT_SERVICE_URL,
-      '/api/comment/create',
+      '/api/comments/create',
       'POST',
-      req.body,
+      requestBody,
       req.headers
     );
     res.status(200).json(result);
@@ -32,7 +38,7 @@ router.get('/content/:contentId', async (req, res, next) => {
   try {
     const result = await proxyRequest(
       COMMENT_SERVICE_URL,
-      `/api/comment/content/${req.params.contentId}`,
+      `/api/comments/getByContentId/${req.params.contentId}`,
       'GET',
       null,
       req.headers
@@ -51,7 +57,7 @@ router.delete('/delete/:id', authMiddleware, async (req, res, next) => {
   try {
     const result = await proxyRequest(
       COMMENT_SERVICE_URL,
-      `/api/comment/delete/${req.params.id}`,
+      `/api/comments/delete/${req.params.id}`,
       'DELETE',
       null,
       req.headers

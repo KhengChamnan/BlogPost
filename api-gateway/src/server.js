@@ -45,10 +45,21 @@ app.use((req, res) => {
 
 // Error Handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  
+  console.error('Error:', {
+    status,
+    message,
+    path: req.path,
+    method: req.method,
+    error: err,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+  
+  res.status(status).json({
+    message,
+    ...(process.env.NODE_ENV === 'development' && err.data ? { data: err.data } : {})
   });
 });
 
