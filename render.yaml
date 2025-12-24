@@ -1,0 +1,112 @@
+services:
+  # MySQL Database (Background Worker)
+  - type: worker
+    name: mysql-database
+    dockerImage: mysql:8.0
+    dockerCommand: mysqld --default-authentication-plugin=mysql_native_password
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: blog_auth
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+
+  # MongoDB Database (Background Worker - Shared by content and comment services)
+  - type: worker
+    name: mongo-database
+    dockerImage: mongo:7.0
+    dockerCommand: mongod
+    disk:
+      name: mongo-data
+      mountPath: /data/db
+      sizeGB: 10
+
+  # Auth User Service (Laravel)
+  - type: web
+    name: auth-user-service
+    env: php
+    buildCommand: composer install --no-dev --no-scripts --no-autoloader && composer dump-autoload --optimize && php artisan migrate --force
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromService:
+          type: worker
+          name: mysql-database
+          property: host
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: blog_auth
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        fromService:
+          type: worker
+          name: mysql-database
+          property: password
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+    healthCheckPath: /api/health
+
+  # Content Service (Node.js)
+  - type: web
+    name: content-service
+    env: node
+    buildCommand: npm install --production
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "3001"
+      - key: MONGO_URL
+        value: mongodb://mongo-database.onrender.com:27017/blog_content
+    healthCheckPath: /health
+
+  # Comment Service (Node.js)
+  - type: web
+    name: comment-service
+    env: node
+    buildCommand: npm install --production
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "4000"
+      - key: MONGO_URL
+        value: mongodb://mongo-database.onrender.com:27017/blog_comments
+    healthCheckPath: /health
+
+  # API Gateway (Node.js)
+  - type: web
+    name: api-gateway
+    env: node
+    buildCommand: npm install --production
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: AUTH_SERVICE_URL
+        fromService:
+          type: web
+          name: auth-user-service
+          property: host
+      - key: CONTENT_SERVICE_URL
+        fromService:
+          type: web
+          name: content-service
+          property: host
+      - key: COMMENT_SERVICE_URL
+        fromService:
+          type: web
+          name: comment-service
+          property: host
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "100"
+    healthCheckPath: /health

@@ -9,6 +9,15 @@ const app = express();
 app.use(bodyParser.json());
 dotenv.config();
 
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'UP',
+    service: 'content-service',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Specify the port to listen on
 const port = process.env.PORT || 3001;
 

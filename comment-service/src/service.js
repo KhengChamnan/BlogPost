@@ -9,8 +9,17 @@ const app = express();
 app.use(bodyParser.json());
 dotenv.config();
 
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'UP',
+    service: 'comment-service',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Specify the port to listen on
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 4000;
 
 // Connect to MongoDB
 const mongourl = process.env.MONGO_URL;
