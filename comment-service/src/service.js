@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import contentRoute from './routes/contentRoute.js';
+import commentRoute from './route/commentRoute.js';
 
 const app = express();
 
@@ -24,4 +24,4 @@ mongoose.connect(mongourl).then(() => {
   console.error('Failed to connect to MongoDB', err);
 })
 
-app.use("/api/content", contentRoute);
+app.use("/api/comments", commentRoute);

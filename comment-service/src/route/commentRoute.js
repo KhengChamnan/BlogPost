@@ -1,18 +1,14 @@
 import express from "express";
 import {
-  fetch,
-  fetchById,
   create,
-  update,
-  deleteContent,
-} from "../controllers/contentController.js";
+  fetchByContentId,
+  deleteComment,
+} from "../controllers/commentController.js";
 
-const contentRoute = express.Router();
+const commentRoute = express.Router();
 
-contentRoute.post("/create", create);
-contentRoute.get("/getAllContent", fetch);
-contentRoute.get("/getContent/:id", fetchById);
-contentRoute.put("/update/:id", update);
-contentRoute.delete("/delete/:id", deleteContent);
+commentRoute.post("/create", create);
+commentRoute.get("/getByContentId/:contentId", fetchByContentId);
+commentRoute.delete("/delete/:id", deleteComment);
 
-export default contentRoute;
+export default commentRoute;
