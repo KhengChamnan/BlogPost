@@ -2,7 +2,7 @@ import contentModel from "../models/contentModel.js";
 
 export const create = async (req, res) => {
   try {
-    const contentData = new Content(req.body);
+    const contentData = new contentModel(req.body);
     const savedContent = await contentData.save();
     res.status(200).json({ message: "Content created successfully", data: savedContent });
 
@@ -13,7 +13,7 @@ export const create = async (req, res) => {
 export const fetchById = async (req, res) => {
   try {
     const id = req.params.id;
-    const content = await Content.findById(id);
+    const content = await contentModel.findById(id);
     if (!content) {
       return res.status(404).json({ message: "Content Not found" });
     }
@@ -25,7 +25,7 @@ export const fetchById = async (req, res) => {
 
 export const fetch = async (req, res) => {
   try {
-    const contents = await Content.find();
+    const contents = await contentModel.find();
     if (contents.length === 0) {
       return res.status(404).json({ message: "Content Not found" });
     }
@@ -38,11 +38,11 @@ export const fetch = async (req, res) => {
 export const update = async (req, res) => {
   try {
     const id = req.params.id;
-    const contentExist = await Content.findById({ _id: id });
+    const contentExist = await contentModel.findById({ _id: id });
     if (!contentExist) {
       return res.status(404).json({ message: "Content Not found" });
     }
-    const updatedContent = await Content.findByIdAndUpdate(
+    const updatedContent = await contentModel.findByIdAndUpdate(
       { _id: id },
       { $set: req.body },
       { new: true }
@@ -56,12 +56,12 @@ export const update = async (req, res) => {
 export const deleteContent = async (req, res) => {
   try {
     const id = req.params.id;
-    const contentExist = await Content.findById({ _id: id });
+    const contentExist = await contentModel.findById({ _id: id });
     if (!contentExist) {
       return res.status(404).json({ message: "Content Not found" });
     }
 
-    await Content.findByIdAndDelete({ _id: id });
+    await contentModel.findByIdAndDelete({ _id: id });
     res.status(201).json({ message: "Content deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });

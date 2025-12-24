@@ -1,6 +1,10 @@
 import express from "express";
 import {
   create,
+  fetch,
+  fetchById,
+  update,
+  deleteContent,
 } from "../controllers/contentController.js";
 
 const contentRoute = express.Router();

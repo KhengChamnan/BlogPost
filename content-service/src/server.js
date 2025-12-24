@@ -1,14 +1,19 @@
-import express from "express";
-import contentRoute from "./routes/contentRoute.js";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import contentRoute from './routes/contentRoute.js';
 
 const app = express();
+
 app.use(bodyParser.json());
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+// Specify the port to listen on
+const port = process.env.PORT || 3001;
+
+// Connect to MongoDB
+const mongourl = process.env.MONGO_URL;
 
 mongoose.connect(mongourl).then(() => {
   console.log('Connected to MongoDB');
