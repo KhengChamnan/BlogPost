@@ -1,0 +1,36 @@
+services:
+  # Content Service (ExpressJS + MongoDB)
+  content-service:
+    build:
+      context: ./content-service
+      dockerfile: dockerfile
+    container_name: content-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URL=mongodb://mongo:27017/blog_content
+    depends_on:
+      - mongo
+    networks:
+      - blog-network
+    restart: unless-stopped
+
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - blog-network
+    restart: unless-stopped
+
+networks:
+  blog-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
