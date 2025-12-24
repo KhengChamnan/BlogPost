@@ -1,6 +1,6 @@
 services:
-  # MySQL Database (Background Worker)
-  - type: worker
+  # MySQL Database (Private Service)
+  - type: pserv
     name: mysql-database
     dockerImage: mysql:8.0
     dockerCommand: mysqld --default-authentication-plugin=mysql_native_password
@@ -14,8 +14,8 @@ services:
       mountPath: /var/lib/mysql
       sizeGB: 10
 
-  # MongoDB Database (Background Worker - Shared by content and comment services)
-  - type: worker
+  # MongoDB Database (Private Service - Shared by content and comment services)
+  - type: pserv
     name: mongo-database
     dockerImage: mongo:7.0
     dockerCommand: mongod
@@ -35,7 +35,7 @@ services:
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        value: mysql-database.onrender.com
+        value: mysql-database
         sync: false
       - key: DB_PORT
         value: "3306"
@@ -64,7 +64,7 @@ services:
       - key: PORT
         value: "3001"
       - key: MONGO_URL
-        value: mongodb://mongo-database.onrender.com:27017/blog_content
+        value: mongodb://mongo-database:27017/blog_content
         sync: false
     healthCheckPath: /health
 
@@ -79,7 +79,7 @@ services:
       - key: PORT
         value: "4000"
       - key: MONGO_URL
-        value: mongodb://mongo-database.onrender.com:27017/blog_comments
+        value: mongodb://mongo-database:27017/blog_comments
         sync: false
     healthCheckPath: /health
 
