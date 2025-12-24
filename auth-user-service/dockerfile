@@ -42,5 +42,5 @@ RUN php artisan key:generate --ansi || true
 EXPOSE 8000
 
 # Start Laravel development server
-# Note: Migrations should be run in Render build command or via post-deploy script
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Run migrations and then start the server
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
